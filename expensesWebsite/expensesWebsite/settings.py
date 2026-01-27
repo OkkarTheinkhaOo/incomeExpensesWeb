@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import environ
 import os
+#to enable django_heroku(meaning deploy on heroku)
+import django_heroku
 
 #To Load the .env file which contains the database credentials
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'expenses',
+    'authentication',
 ]
 
 MIDDLEWARE = [
@@ -130,3 +133,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'expensesWebsite/static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+#related with heroku deployment
+django_heroku.settings(locals())

@@ -7,8 +7,11 @@ name = "pypi"
 django = "*"
 psycopg2 = "*"
 django-environ = "*"
+django-heroku = "*"
+gunicorn = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.14"
+
