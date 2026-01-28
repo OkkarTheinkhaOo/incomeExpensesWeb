@@ -9,9 +9,9 @@ psycopg2 = "*"
 django-environ = "*"
 django-heroku = "*"
 gunicorn = "*"
+validate-email = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.14"
-

@@ -1,4 +1,5 @@
 {% extends "base_auth.html" %} {% block content %}
+{% load static %}
 
 <div class="row">
   <div class="col-md-4"></div>
@@ -12,11 +13,15 @@
           <div class="form-group">
             <input
               type="text"
-              name="user"
-              id="userField"
+              name="username"
+              id="usernameField"
               placeholder="Username"
               class="form-control form-control-sm"
             />
+            <div class="invalid-feedback-username" style="display: none;">
+              
+            </div>
+            <p class="text-sm text-success usernameSuccessOutput"></p>
           </div>
           <div class="form-group">
             <input
@@ -26,6 +31,8 @@
               placeholder="Email"
               class="form-control form-control-sm"
             />
+            <div class="invalid-feedback-email" style="display: none;"></div>
+            
           </div>
           <div class="form-group">
             <input
@@ -44,5 +51,5 @@
   </div>
   <div class="col-md-3"></div>
 </div>
-
+<script src="{% static 'js/register.js' %}"></script>
 {% endblock content %}
