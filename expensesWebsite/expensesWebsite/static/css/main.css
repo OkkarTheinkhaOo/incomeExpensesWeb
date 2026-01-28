@@ -70,3 +70,11 @@
 .bd-mode-toggle .dropdown-menu .active .bi {
   display: block !important;
 }
+.passwordToggle {
+  cursor: pointer;
+  transition: all ease-in-out .2s ;
+}
+
+.passwordToggle:hover {
+ transform: scale(1.1);
+}
