@@ -1,11 +1,23 @@
-from django.shortcuts import render
+import token
+from django.shortcuts import render, redirect
 from django.views import View
 import json
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from validate_email import validate_email
+# for showing Messages
 from django.contrib import messages
+# for email validation
+from django.core.mail import EmailMessage
+from django.conf import settings
+from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
+from .utils import *
 # Create your views here.
+
+
 
 class Registration(View):
     def get(self, request):
@@ -14,26 +26,80 @@ class Registration(View):
     def post(self, request):
         #Get user data
         username = request.POST['username']
-        email = request.POST['email']
+        userEmail = request.POST['email']
         password = request.POST['password']
         
         context = {
             'fieldValues': request.POST
         }
-        # Validate user data
-        if not User.objects.filter(username=username).exists():
-            if not User.objects.filter(email=email).exists():
-                if len(password) < 6:
-                    messages.error(request, 'Password should be at least 6 characters')
-                    return render(request, 'authentication/register.html', context)        
-                # create user account
-                user = User.objects.create_user(username=username,email=email)
-                user.set_password(password)
-                user.save()
-                messages.success(request, 'Account created successfully')
+        # Validating user data
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already taken')
+            return render(request, 'authentication/register.html', context)
+        
+        if User.objects.filter(email=userEmail).exists():
+            messages.error(request, 'Email already exists')
+            return render(request, 'authentication/register.html', context)
+        
+        if len(password) < 6:
+            messages.error(request, 'Password should be at least 6 character')
+            return render(request, 'authentication/register.html', context)
+            
+        # create user account
+        user = User.objects.create_user(username=username,email=userEmail)
+        user.set_password(password)
+        user.is_active=False
+        user.save()
+        
+        #for activation link
+        domain=get_current_site(request).domain
+        link = reverse('activate', kwargs={
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)), 
+            'token': token_generator.make_token(user)
+        })
+        activateUrl = f"{request.scheme}://{domain}{link}"
+        # for sending email
+        emailSubject = 'Activate your account'
+        emailBody = 'Hi ' + user.username + ', Please use this link to verify your account\n' + activateUrl
         
         
-        return render(request, 'authentication/register.html')
+        emailMessage = EmailMessage(
+            emailSubject,
+            emailBody,
+            settings.EMAIL_HOST_USER,
+            [userEmail],
+        )
+        emailMessage.send(fail_silently=False)
+        messages.success(request, 'Account created successfully. Check your email')
+        return redirect('register')
+
+class verification(View):
+    def get(self, request, uid, token):
+        try:
+            id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=id)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            messages.error(request, 'Invalid activation link')
+            return redirect('login')
+                        
+        if user.is_active:
+            messages.info(request, "Account already activated")
+            return redirect('login')
+        
+        if not token_generator.check_token(user, token):
+            messages.error(request, 'Invalid or expired token')
+            return redirect('login')
+        
+        user.is_active = True
+        user.save()
+        
+        messages.success(request, 'Account activated successfully')
+        return redirect('login')    
+        
+    
+class login(View):
+    def get(self, request):
+        return render(request, 'authentication/login.html')
 
 class UsernameValidationView(View): 
     def post(self, request):

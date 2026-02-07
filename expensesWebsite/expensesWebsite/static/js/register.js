@@ -1,11 +1,10 @@
 const usernameField = document.querySelector("#usernameField");
-const usernameFeedbackField = document.querySelector(
-  ".invalid-feedback-username",
-);
+const usernameFeedbackField = document.querySelector(".invalid-feedback-username",);
 const usernameSuccessOutput = document.querySelector(".usernameSuccessOutput");
 
 const emailField = document.querySelector("#emailField");
 const emailFeedbackField = document.querySelector(".invalid-feedback-email");
+const emailSuccessOutput = document.querySelector(".emailSuccessOutput");
 
 const passwordToggle = document.querySelector(".passwordToggle");
 const passwordField = document.querySelector("#passwordField");
@@ -57,6 +56,8 @@ usernameField.addEventListener("keyup", (e) => {
 emailField.addEventListener("keyup", (e) => {
   console.log("Key up event detected");
   const emailVal = e.target.value;
+  emailSuccessOutput.textContent = `Checking ${usernameVal}...`;
+  emailSuccessOutput.style.display = "block";
 
   emailFeedbackField.style.display = "none";
   emailField.classList.remove("is-invalid");
@@ -70,7 +71,8 @@ emailField.addEventListener("keyup", (e) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("data received:", data);      
+        console.log("data received:", data);    
+        emailSuccessOutput.style.display = "none";  
         if (data.email_error) {
           emailField.classList.add("is-invalid");
           emailFeedbackField.innerHTML = `<p>${data.email_error}</p>`;
