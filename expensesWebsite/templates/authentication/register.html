@@ -9,7 +9,10 @@
         <div class="card-title py-3">
           <h4>Register</h4>
         </div>
-        <form action="" method="post">
+
+        <form action="{% url 'register' %}" method="post">
+          {% csrf_token %}
+          {% include "partials/_messages.html" %}
           <div class="form-group">
             <input
               type="text"
@@ -17,6 +20,7 @@
               id="usernameField"
               placeholder="Username"
               class="form-control form-control-sm"
+              value="{{fieldValues.username}}"
             />
             <div class="invalid-feedback-username" style="display: none;">
               
@@ -30,6 +34,7 @@
               id="emailField"
               placeholder="Email"
               class="form-control form-control-sm"
+              value="{{fieldValues.email}}"
             />
             <div class="invalid-feedback-email" style="display: none;"></div>
             
@@ -45,7 +50,7 @@
             <small class="d-flex justify-content-end py-3 passwordToggle">SHOW</small>
             
           </div>
-          <input type="submit" value="Register" class="btn btn-primary w-100" />
+          <input type="submit" value="Register" class="btn btn-primary w-100 submit-btn" />
         </form>
       </div>
     </div>
