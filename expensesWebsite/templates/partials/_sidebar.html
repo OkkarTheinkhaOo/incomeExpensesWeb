@@ -89,12 +89,16 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link d-flex align-items-center gap-2" href="#">
+          <div class="nav-link d-flex align-items-center gap-2" href="#">
             <svg class="bi" aria-hidden="true">
               <use xlink:href="#door-closed"></use>
             </svg>
-            Sign out
-          </a>
+
+            <form action="{% url 'logout' %}" method="post">
+              {% csrf_token %}
+              <input type="submit" value="Sign out" class="btn btn-link p-0 m-0 align-baseline submit-btn" />
+            </form>
+          </div>
         </li>
       </ul>
     </div>

@@ -15,6 +15,8 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from .utils import *
+#for login verification
+from django.contrib import auth
 # Create your views here.
 
 
@@ -100,6 +102,32 @@ class verification(View):
 class login(View):
     def get(self, request):
         return render(request, 'authentication/login.html')
+    
+    def post(self, request):
+        username = request.POST['username']
+        password = request.POST['password']
+        
+        if not username or not password:
+            messages.error(request, 'Please fill all the fields')
+            return redirect('login')
+        
+        if not User.objects.filter(username=username).exists():
+            messages.error(request, 'User does not exist')
+            return redirect('login')
+        
+        user = auth.authenticate(username=username, password=password)
+        if not user:
+            messages.error(request, 'Wrong password, try again')
+            return render(request, 'authentication/login.html', {'fieldValues': request.POST})
+        
+        if not user.is_active:
+            messages.error(request, 'Account not activated. Please check your email for activation link')
+            return redirect('login')
+        
+        auth.login(request, user)
+        return redirect('expenses')
+        
+                
 
 class UsernameValidationView(View): 
     def post(self, request):
@@ -124,4 +152,9 @@ class EmailValidationView(View):
         if User.objects.filter(email=email).exists():
             return JsonResponse({'email_error': 'Email is already taken'}, status=409)
         return JsonResponse({'email_valid': True})
-    
+
+class Logout(View):
+    def post(self, request):
+        auth.logout(request)
+        messages.success(request, 'You have been logged out')
+        return redirect('login')
