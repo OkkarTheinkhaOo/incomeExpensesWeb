@@ -14,14 +14,18 @@ def index(request):
     currencyData = []
     filePath = os.path.join(settings.BASE_DIR, 'currencies.json')
     
+    
     with open(filePath, 'r') as f:
         data = json.load(f)
         for k, v in data.items():
             currencyData.append({'name': k, 'value': v})
 
+    # Get existing preference (for GET & POST)
+    preference = UserPreference.objects.filter(user=request.user).first()
+
     if request.method == 'POST':
         currency = request.POST.get('currency')
-        preference, created = UserPreference.objects.get_or_create(user=request.user, defaults={'currency': currency})    
+        preference, created = UserPreference.objects.get_or_create(user=request.user, defaults={'currency': currency})        
         context = {
         'currencies': currencyData,
         'preference': preference
@@ -37,7 +41,7 @@ def index(request):
             messages.success(request, 'Preferences updated successfully')
         else:
             messages.success(request, 'Preferences saved successfully')
-    return render(request, 'preferences/index.html', context)
+    return render(request, 'preferences/index.html', {'currencies': currencyData,'preference': preference})
         
 
 
