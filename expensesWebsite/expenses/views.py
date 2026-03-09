@@ -4,15 +4,44 @@ from django.views.decorators.cache import never_cache
 #to render the Category
 from .models import *
 from django.contrib import messages
-
+#to make a pagination
+from django.core.paginator import Paginator
+#to make a search
+import json
+from django.http import JsonResponse
+from django.db.models import Q
 # Create your views here.
+
+def searchExpenses(request):
+    if request.method == 'POST':
+        searchString = json.loads(request.body).get('searchText')
+        
+        expenses = Expense.objects.filter(
+            Q(amount__icontains=searchString) |
+            Q(date__istartswith=searchString) |
+            Q(description__icontains=searchString) |
+            Q(category__icontains=searchString),
+            owner=request.user
+        )
+        
+        data = expenses.values()
+        return JsonResponse(list(data),safe=False)
 
 @never_cache
 @login_required(login_url='login')
 def index(request):
     categories = Category.objects.all()
     expenses = Expense.objects.filter(owner=request.user)
-    return render(request, 'expenses/index.html', {'categories': categories, 'expenses': expenses})
+    paginator = Paginator(expenses,2)
+    pageNumber = request.GET.get('page')
+    pageObject = Paginator.get_page(paginator, pageNumber)
+    
+    context = {
+        'categories': categories, 
+        'expenses': expenses,
+        'pageObject': pageObject
+        }
+    return render(request, 'expenses/index.html', context)
 
 @never_cache
 @login_required(login_url='login')
